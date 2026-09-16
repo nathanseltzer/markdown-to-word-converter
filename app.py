@@ -68,16 +68,19 @@ with right:
         st.markdown(text)
 
 if text.strip():
-    st.download_button(
-        "Download Word (.docx)",
-        data=to_docx(text),
-        file_name=f"{title_of(text)}.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        type="primary",
-    )
+    b1, b2 = st.columns([1, 1])
+    with b1:
+        st.download_button(
+            "Download Word (.docx)",
+            data=to_docx(text),
+            file_name=f"{title_of(text)}.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            type="primary",
+            use_container_width=True,
+        )
+    with b2:
+        # Streamlit re-runs the script on any button press, which refreshes the preview.
+        st.button("Rerender preview", use_container_width=True)
 
 st.divider()
-st.markdown(
-    f"Free, no sign-up. For a live editor with PDF, HTML and share links, "
-    f"use [ViewMarkdown.com]({SITE})."
-)
+st.markdown(f"For a live editor with PDF, HTML and share links, use [ViewMarkdown.com]({SITE}).")
