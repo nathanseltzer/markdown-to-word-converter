@@ -7,10 +7,10 @@ import streamlit as st
 
 SITE = "https://viewmarkdown.com"
 
-st.set_page_config(page_title="Markdown to Word Converter", page_icon="📝", layout="centered")
+st.set_page_config(page_title="Markdown to Word Converter", page_icon="📝", layout="wide")
 
 st.title("Markdown to Word Converter")
-st.caption(f"by [ViewMarkdown.com]({SITE}/markdown-to-word)")
+st.markdown(f"### by [ViewMarkdown.com]({SITE}/markdown-to-word)")
 
 SAMPLE = """# Project update
 
@@ -27,12 +27,6 @@ Paste your Markdown here, or upload a .md file.
 | Press release | Priya | In review |
 """
 
-uploaded = st.file_uploader("Upload a .md file", type=["md", "markdown", "txt"])
-if uploaded is not None:
-    text = uploaded.getvalue().decode("utf-8", errors="replace")
-else:
-    text = st.text_area("Markdown", value=SAMPLE, height=300, label_visibility="collapsed")
-
 
 def title_of(markdown: str) -> str:
     heading = re.search(r"^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$", markdown, re.M)
@@ -41,24 +35,46 @@ def title_of(markdown: str) -> str:
     return name[:60] or "document"
 
 
-if text.strip():
+def to_docx(markdown: str) -> bytes:
     # pandoc writes binary formats to a file, so convert through a temp path.
     with tempfile.TemporaryDirectory() as tmp:
         out = os.path.join(tmp, "out.docx")
-        pypandoc.convert_text(text, "docx", format="gfm", outputfile=out)
+        pypandoc.convert_text(markdown, "docx", format="gfm", outputfile=out)
         with open(out, "rb") as f:
-            docx_bytes = f.read()
+            return f.read()
 
+
+uploaded = st.file_uploader("Upload a .md file", type=["md", "markdown", "txt"])
+if uploaded is not None:
+    st.session_state["md"] = uploaded.getvalue().decode("utf-8", errors="replace")
+if "md" not in st.session_state:
+    st.session_state["md"] = SAMPLE
+
+left, right = st.columns(2, gap="large")
+
+with left:
+    st.markdown("**Markdown**")
+    text = st.text_area(
+        "Markdown",
+        key="md",
+        height=520,
+        label_visibility="collapsed",
+        help="The preview updates when you click outside the box or press Cmd/Ctrl+Enter.",
+    )
+
+with right:
+    st.markdown("**Preview**")
+    with st.container(border=True, height=520):
+        st.markdown(text)
+
+if text.strip():
     st.download_button(
         "Download Word (.docx)",
-        data=docx_bytes,
+        data=to_docx(text),
         file_name=f"{title_of(text)}.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         type="primary",
     )
-
-    st.subheader("Preview")
-    st.markdown(text)
 
 st.divider()
 st.markdown(
