@@ -70,6 +70,9 @@ with right:
 if text.strip():
     b1, b2 = st.columns([1, 1])
     with b1:
+        # Streamlit re-runs the script on any button press, which refreshes the preview.
+        st.button("Rerender preview", use_container_width=True)
+    with b2:
         st.download_button(
             "Download Word (.docx)",
             data=to_docx(text),
@@ -78,9 +81,6 @@ if text.strip():
             type="primary",
             use_container_width=True,
         )
-    with b2:
-        # Streamlit re-runs the script on any button press, which refreshes the preview.
-        st.button("Rerender preview", use_container_width=True)
 
 st.divider()
 st.markdown(f"For a live editor with PDF, HTML and share links, use [ViewMarkdown.com]({SITE}).")
