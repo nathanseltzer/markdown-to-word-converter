@@ -1,0 +1,2 @@
+streamlit>=1.38
+pypandoc-binary>=1.13
